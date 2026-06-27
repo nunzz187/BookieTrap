@@ -1,7 +1,7 @@
 import streamlit as st
 import json
 
-def calculate_automated_predictions(home_team, away_team, group_data, wildcard_table):
+def calculate_automated_predictions(home_team, away_team, favorite_team, group_data, wildcard_table):
     """
     Automated Analysis Engine for World Cup Group Stage Finales.
     Evaluates mutual safety thresholds based on the 3rd-place master tracker.
@@ -24,17 +24,29 @@ def calculate_automated_predictions(home_team, away_team, group_data, wildcard_t
     predictions = []
     if home_safe_with_draw and away_safe_with_draw:
         reasoning.append(
-            f"\n*   **The Shared Premium:** A draw elevates both teams above the elimination cutoff line. "
+            f"\n* **The Shared Premium:** A draw elevates both teams above the elimination cutoff line. "
             f"Because a single point guarantees safety, an implicit mutual deadlock script is heavily favored. "
-            f"Expect a slow, low-risk horizontal passing model in the final 20 minutes."
+            f"Neither manager will take heavy risks past the 75th minute."
         )
+        
+        # Factor in who the bookies favored to adjust the targeted variations
+        if favorite_team == home_team:
+            controlled_score = "1 – 0"
+            favored_desc = f"The odds favor **{home_team}** to dictate the game. They claim a narrow tactical advantage, immediately dropping into a low block to run out the clock."
+        elif favorite_team == away_team:
+            controlled_score = "0 – 1"
+            favored_desc = f"The odds favor **{away_team}** to punish on transition. They secure a thin lead and shut down the match cleanly."
+        else:
+            controlled_score = "1 – 0"
+            favored_desc = "With no clear bookie edge, a tight, defensive breakthrough manages the qualification."
+
         predictions = [
             {"score": "0 – 0", "type": "Cooperative Stalemate", "desc": "Both sides minimize horizontal risk, maintaining low defensive structures to secure progression."},
             {"score": "1 – 1", "type": "Restored Parity", "desc": "An early individual mistake prompts an equalizer, after which both teams down tools to share the points."},
-            {"score": "1 – 0", "type": "Controlled Edge", "desc": "The favored side claims a narrow tactical advantage, immediately dropping into a low block to run out the clock."}
+            {"score": controlled_score, "type": "Controlled Edge", "desc": favored_desc}
         ]
     else:
-        reasoning.append("\n*   **Asymmetrical Motivation:** Match parameters require an open, high-risk script.")
+        reasoning.append("\n* **Asymmetrical Motivation:** Match parameters require an open, high-risk script because a draw fails to protect both teams simultaneously.")
         
     return {
         "safety_threshold_points": safe_points_line,
@@ -42,15 +54,21 @@ def calculate_automated_predictions(home_team, away_team, group_data, wildcard_t
         "target_scores": predictions
     }
 
-# --- ACTIVE INGESTION PIPELINE ---
-st.title("World Cup Predictive Analytics Engine")
+# --- STREAMLIT UI INTERFACE ---
+st.title("⚽ BookieTrap: Grand Finale Matrix")
+st.markdown("Select your matching pair to calculate tactical script vulnerabilities based on the tournament wildcard thresholds.")
 
-# Real-time tournament database states
-group_l_standings = {
+# Real-time data storage arrays
+tournament_teams = ["Croatia", "Ghana", "England", "Panama", "Sweden", "Ecuador", "Senegal"]
+
+group_stage_database = {
     "Croatia": {"points": 3, "gd": -1},
     "Ghana": {"points": 4, "gd": 1},
     "England": {"points": 4, "gd": 2},
-    "Panama": {"points": 0, "gd": -2}
+    "Panama": {"points": 0, "gd": -2},
+    "Sweden": {"points": 4, "gd": 0},
+    "Ecuador": {"points": 4, "gd": 0},
+    "Senegal": {"points": 3, "gd": 2}
 }
 
 master_wildcard_standings = [
@@ -65,18 +83,37 @@ master_wildcard_standings = [
     {"rank": 9, "team": "Uruguay", "points": 2, "gd": -1}
 ]
 
-# Run analysis execution
-analytics = calculate_automated_predictions(
-    home_team="Croatia", 
-    away_team="Ghana", 
-    group_data=group_l_standings, 
-    wildcard_table=master_wildcard_standings
+# Interactive Form Selectors
+col1, col2 = st.columns(2)
+with col1:
+    team_a = st.selectbox("Select Home Team", options=tournament_teams, index=0)
+with col2:
+    team_b = st.selectbox("Select Away Team", options=tournament_teams, index=1)
+
+# Bookmaker Variable Injector
+odds_favorite = st.radio(
+    "Who do the bookies have put as favourites to win?",
+    options=[team_a, team_b, "Even / No Favorite"],
+    index=2
 )
 
-# Render Streamlit Output Nodes
-st.markdown(analytics["automated_reasoning"])
-st.markdown("---")
-st.markdown("### 🎯 Target Correct Score Presets")
+if team_a == team_b:
+    st.error("Error: Please select two different competing teams.")
+else:
+    # Trigger calculation dynamically on state change
+    analytics = calculate_automated_predictions(
+        home_team=team_a, 
+        away_team=team_b, 
+        favorite_team=odds_favorite,
+        group_data=group_stage_database, 
+        wildcard_table=master_wildcard_standings
+    )
 
-for target in analytics["target_scores"]:
-    st.info(f"**{target['score']}** ({target['type']}) — {target['desc']}")
+    # Render Output Nodes
+    st.markdown("---")
+    st.markdown(analytics["automated_reasoning"])
+    
+    if analytics["target_scores"]:
+        st.markdown("### 🎯 Target Correct Score Presets")
+        for target in analytics["target_scores"]:
+            st.info(f"**{target['score']}** ({target['type']}) — {target['desc']}")
