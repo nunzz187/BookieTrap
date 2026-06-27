@@ -1,11 +1,10 @@
 import streamlit as st
 
-def calculate_automated_predictions(home_team, away_team, favorite_team, group_data):
+def generate_dynamic_analytics(home_team, away_team, favorite_team, group_data):
     """
-    Simplified Analysis Engine for World Cup Group Stage Finales.
-    Outputs clear, high-stakes key qualification points and exact target scores.
+    Simplified World Cup Analytics Engine.
+    Outputs clean, high-impact bullets and ultra-short correct score lines.
     """
-    # Pull stats for both teams
     home_pts = group_data[home_team]["points"]
     away_pts = group_data[away_team]["points"]
     home_gd = group_data[home_team]["gd"]
@@ -13,66 +12,73 @@ def calculate_automated_predictions(home_team, away_team, favorite_team, group_d
     home_ga = group_data[home_team]["ga"]
     away_ga = group_data[away_team]["ga"]
     
-    reasoning = []
-    reasoning.append(f"### 🛡️ Key Qualification Points")
+    # --- DYNAMIC TEAM SCENARIOS (WHAT THEY NEED) ---
+    scenarios = []
     
-    # 1. Evaluate Home Team Situation
+    # Home Team Scenarios
+    scenarios.append(f"### 📋 What {home_team} Needs")
     if home_pts >= 4:
-        reasoning.append(f"* **{home_team} ({home_pts} Pts):** They are sitting pretty. **1 point** in this match guarantees absolute safety. ")
+        scenarios.append(f"* **Win:** Moves to {home_pts + 3} points. Secures top seeding for the Round of 32.")
+        scenarios.append(f"* **Draw:** Moves to {home_pts + 1} points. Automatically secures a knockout spot regardless of other results.")
+        scenarios.append(f"* **Loss:** Stays on {home_pts} points. Still highly likely to qualify, but depends on goal difference rankings.")
     else:
-        reasoning.append(f"* **{home_team} ({home_pts} Pts):** They are in a dangerous spot. A draw leaves them vulnerable to goal difference math, so **they must win to be 100% safe**. If they lose this game, **they are completely OUT of the World Cup**.")
-        
-    # 2. Evaluate Away Team Situation
+        scenarios.append(f"* **Win:** Moves to {home_pts + 3} points. Automatically securing a knockout spot regardless of other results.")
+        scenarios.append(f"* **Draw:** Moves to {home_pts + 1} points. Moves to {home_pts + 1} points on the third-place ranking table, but because of goal difference ({home_gd}), they risk being surpassed by other teams.")
+        scenarios.append(f"* **Loss:** Stays on {home_pts} points. With {home_pts} points and a negative goal difference, it is statistically very unlikely to rank in the top 8 of third-placed teams, meaning elimination.")
+
+    # Away Team Scenarios
+    scenarios.append(f"### 📋 What {away_team} Needs")
     if away_pts >= 4:
-        reasoning.append(f"* **{away_team} ({away_pts} Pts):** They are sitting pretty. **1 point** in this match guarantees absolute safety. ")
+        scenarios.append(f"* **Win:** Moves to {away_pts + 3} points. Secures top seeding for the Round of 32.")
+        scenarios.append(f"* **Draw:** Moves to {away_pts + 1} points. Automatically secures a knockout spot regardless of other results.")
+        scenarios.append(f"* **Loss:** Stays on {away_pts} points. Still highly likely to qualify, but depends on goal difference rankings.")
     else:
-        reasoning.append(f"* **{away_team} ({away_pts} Pts):** They are in a dangerous spot. A draw leaves them vulnerable to goal difference math, so **they must win to be 100% safe**. If they lose this game, **they are completely OUT of the World Cup**.")
+        scenarios.append(f"* **Win:** Moves to {away_pts + 3} points. Automatically securing a knockout spot regardless of other results.")
+        scenarios.append(f"* **Draw:** Moves to {away_pts + 1} points. Moves to {away_pts + 1} points on the third-place ranking table, but because of goal difference ({away_gd}), they risk being surpassed by other teams.")
+        scenarios.append(f"* **Loss:** Stays on {away_pts} points. With {away_pts} points and a negative goal difference, it is statistically very unlikely to rank in the top 8 of third-placed teams, meaning elimination.")
 
-    # 3. Defensive Asset Check (Has anyone not conceded?)
-    if home_ga == 0:
-        reasoning.append(f"* **Defensive Note:** **{home_team} has not conceded a single goal yet** this tournament. They can easily park the bus, rest players if needed, and cruise to a low-risk draw.")
-    if away_ga == 0:
-        reasoning.append(f"* **Defensive Note:** **{away_team} has not conceded a single goal yet** this tournament. They can easily park the bus, rest players if needed, and cruise to a low-risk draw.")
-
-    # 4. Correct Score Logic Selection
+    # --- ULTRA-SIMPLE SCORE PREDICTIONS ---
     predictions = []
     
-    # If one team is desperate (must win) and the other is safe with a draw and hasn't conceded (like Croatia vs Ghana)
-    if (home_pts < 4 or sorted) or (away_pts < 4):
-        if favorite_team == home_team:
-            predictions = [
-                {"score": "1 – 0", "type": "Controlled Win", "desc": f"Desperate for the points, {home_team} finds a narrow breakthrough and locks down defensively."},
-                {"score": "0 – 0", "type": "Frustrated Stalemate", "desc": f"{home_team} attacks but fails to break through the brick wall defense. A draw might leave them sweating on other results."},
-                {"score": "1 – 1", "type": "Chased Equalizer", "desc": "One team catches the other out on a counter, forcing a high-intensity scramble to restore parity."}
-            ]
-        elif favorite_team == away_team:
-            predictions = [
-                {"score": "0 – 1", "type": "Away Counter", "desc": f"{away_team} sits back comfortably, absorbs the pressure, and stings on a late counter-attack."},
-                {"score": "0 – 0", "type": "Defensive Masterclass", "desc": "A quiet, low-tempo game where the safe team completely refuses to open up spaces."},
-                {"score": "1 – 1", "type": "Restored Parity", "desc": "A chaotic mistake forces an equalizer, after which both teams manage their physical exertion."}
-            ]
-        else:
-            predictions = [
-                {"score": "0 – 0", "type": "Deadlock", "desc": "Neither side opens up. One wants a point to stay safe, the other can't find a gap."},
-                {"score": "1 – 0", "type": "Narrow Edge", "desc": "A single set-piece or penalty decides a very tense, low-scoring affair."}
-            ]
-    else:
-        # Both teams are already sitting on 4+ points and just need to stroll through
+    # Logic if one team is desperate and the other is qualified/safe
+    if home_pts < 4 and away_pts >= 4:
+        # e.g., Croatia vs Ghana scenario
         predictions = [
-            {"score": "0 – 0", "type": "Mutual Stroll", "desc": "Both teams are safe with a point. Zero risks will be taken by either manager."},
-            {"score": "1 – 1", "type": "Friendly Draw", "desc": "An early error trades goals, then both teams pass sideways to secure mutual progression."}
+            {"score": "2 – 1", "reasoning": f"- Need to Win ({home_team}) & other team qualified ({away_team})"},
+            {"score": "1 – 0", "reasoning": f"- Need to Win ({home_team}) & clean sheet focus"},
+            {"score": "0 – 0", "reasoning": f"- Resting players ({away_team}) & brick wall defense"}
+        ]
+    elif away_pts < 4 and home_pts >= 4:
+        predictions = [
+            {"score": "1 – 2", "reasoning": f"- Need to Win ({away_team}) & other team qualified ({home_team})"},
+            {"score": "0 – 1", "reasoning": f"- Need to Win ({away_team}) & clean sheet focus"},
+            {"score": "0 – 0", "reasoning": f"- Resting players ({home_team}) & brick wall defense"}
+        ]
+    elif home_pts >= 4 and away_pts >= 4:
+        # Both already qualified
+        predictions = [
+            {"score": "0 – 0", "reasoning": "- Both teams qualified & resting key players"},
+            {"score": "1 – 1", "reasoning": "- Both teams qualified & low intensity cruise"}
+        ]
+    else:
+        # Both desperate
+        predictions = [
+            {"score": "1 – 0", "reasoning": f"- Winner takes all & survival mode"},
+            {"score": "0 – 1", "reasoning": f"- Winner takes all & survival mode"},
+            {"score": "1 – 1", "reasoning": f"- High risk draw leaving both vulnerable"}
         ]
         
     return {
-        "automated_reasoning": "\n".join(reasoning),
-        "target_scores": predictions
+        "text_scenarios": "\n".join(scenarios),
+        "scores": predictions
     }
 
-# --- STREAMLIT UI INTERFACE ---
+# --- STREAMLIT USER INTERFACE ---
+st.set_page_config(page_title="BookieTrap Matrix", layout="centered")
 st.title("⚽ BookieTrap: Grand Finale Matrix")
-st.markdown("Select two teams to see exactly what they need to qualify, who is facing elimination, and the exact target scores.")
+st.markdown("Select your matching pair to instantly get qualification stakes and target score presets.")
 
-# --- OFFICIAL COMPREHENSIVE WORLD CUP DATABASE ---
+# --- OFFICIAL COMPREHENSIVE 48-TEAM DATABASE ---
 group_stage_database = {
     "Mexico": {"points": 9, "gd": 6, "ga": 1}, "South Africa": {"points": 4, "gd": -1, "ga": 4},
     "South Korea": {"points": 3, "gd": -1, "ga": 3}, "Czechia": {"points": 1, "gd": -4, "ga": 6},
@@ -96,18 +102,18 @@ group_stage_database = {
     "Algeria": {"points": 3, "gd": -2, "ga": 5}, "Jordan": {"points": 0, "gd": -3, "ga": 4},
     "Colombia": {"points": 6, "gd": 3, "ga": 2}, "Portugal": {"points": 4, "gd": 5, "ga": 1},
     "DR Congo": {"points": 1, "gd": -1, "ga": 3}, "Uzbekistan": {"points": 0, "gd": -7, "ga": 8},
-    "England": {"points": 4, "gd": 2, "ga": 2}, "Ghana": {"points": 4, "gd": 1, "ga": 0}, # 0 Goals Conceded
+    "England": {"points": 4, "gd": 2, "ga": 2}, "Ghana": {"points": 4, "gd": 1, "ga": 0},
     "Croatia": {"points": 3, "gd": -1, "ga": 4}, "Panama": {"points": 0, "gd": -2, "ga": 2}
 }
 
 all_teams_list = sorted(list(group_stage_database.keys()))
 
-# Interactive Layout Forms
+# Match Selector UI Elements
 col1, col2 = st.columns(2)
 with col1:
-    team_a = st.selectbox("Select Home Team", options=all_teams_list, index=12) # Defaults to Croatia
+    team_a = st.selectbox("Select Home Team", options=all_teams_list, index=12)  # Croatia
 with col2:
-    team_b = st.selectbox("Select Away Team", options=all_teams_list, index=19) # Defaults to Ghana
+    team_b = st.selectbox("Select Away Team", options=all_teams_list, index=19)  # Ghana
 
 odds_favorite = st.radio(
     "Who do the bookies have put as favourites to win?",
@@ -118,19 +124,20 @@ odds_favorite = st.radio(
 if team_a == team_b:
     st.error("Error: Please select two different competing teams.")
 else:
-    # Run simple prediction engine
-    analytics = calculate_automated_predictions(
+    # Run simple prediction calculation
+    analytics = generate_dynamic_analytics(
         home_team=team_a, 
         away_team=team_b, 
         favorite_team=odds_favorite,
         group_data=group_stage_database
     )
 
-    # Output to Streamlit Page
+    # --- RENDER OUTPUT STAGE ---
     st.markdown("---")
-    st.markdown(analytics["automated_reasoning"])
+    st.markdown(analytics["text_scenarios"])
     
-    if analytics["target_scores"]:
-        st.markdown("### 🎯 Target Correct Score Predictions")
-        for target in analytics["target_scores"]:
-            st.info(f"**{target['score']}** ({target['type']}) — {target['desc']}")
+    st.markdown("### 🎯 Target Correct Score Predictions")
+    for target in analytics["scores"]:
+        st.markdown(f"**Score:** {target['score']}")
+        st.markdown(f"**Reasoning:** {target['reasoning']}")
+        st.markdown("")
