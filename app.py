@@ -1,71 +1,93 @@
-import streamlit as st
+import json
 
-# Configure the page for a clean mobile-first view
-st.set_page_config(page_title="Trap Detective Engine", page_icon="⚽", layout="centered")
-
-# Custom Dark Mode Styling using Streamlit markdown with corrected parameter
-st.markdown("""
-    <style>
-    .stApp { background-color: #0e1117; color: #ffffff; }
-    h1, h2, h3 { color: #00ffcc !important; font-family: 'Courier New', monospace; }
-    .stButton>button { width: 100%; background-color: #00ffcc; color: black; font-weight: bold; border-radius: 8px; }
-    .stButton>button:hover { background-color: #00cc99; color: white; }
-    </style>
-""", unsafe_allow_html=True)
-
-st.title("⚽ TRAP DETECTIVE ENGINE")
-st.write("---")
-st.subheader("Analyze Match Motivation & Bookie Traps")
-
-# User Inputs for any custom match
-col1, col2 = st.columns(2)
-with col1:
-    home_team = st.text_input("Home Team Name", "Manchester United")
-with col2:
-    away_team = st.text_input("Away Team Name", "League Two Underdog")
-
-st.write("---")
-
-# Selection of conditions based on your logic
-fav_selection = st.radio("Who is the heavy favorite on paper?", (home_team, away_team))
-underdog = away_team if fav_selection == home_team else home_team
-
-st.subheader("Analyze Motivation States")
-
-fav_state = st.selectbox(
-    f"What is the motivation state of the favorite ({fav_selection})?",
-    ["Coasting / Position Secured / Fixture Congestion", "Must Win / Title Chase / Vital Points"]
-)
-
-und_state = st.selectbox(
-    f"What is the motivation state of the underdog ({underdog})?",
-    ["Desperate / Fighting Relegation / Must Qualify", "Safe Mid-table / Out of Tournament"]
-)
-
-st.write("---")
-
-# The Brain: Calculating your exact rules
-if st.button("RUN TRAP ANALYSIS"):
-    st.subheader("🕵️‍♂️ Detective Breakdown")
+def generate_match_analytics(home_team, away_team, group_data, wildcard_table):
+    """
+    Automated Analysis Engine for World Cup Group Stage Finales.
+    Evaluates mutual safety thresholds based on the 3rd-place master tracker.
+    """
+    # 1. Automate Standings Context Extraction
+    home_pts = group_data[home_team]["points"]
+    away_pts = group_data[away_team]["points"]
+    home_gd = group_data[home_team]["gd"]
+    away_gd = group_data[away_team]["gd"]
     
-    # RULE 1: The Adrenaline Upset (Coasting Fav vs Desperate Underdog)
-    if fav_state == "Coasting / Position Secured / Fixture Congestion" and und_state == "Desperate / Fighting Relegation / Must Qualify":
-        st.error(f"⚠️ CRITICAL BOOKIE TRAP DETECTED: THE ADRENALINE UPSET")
-        st.write(f"**The Blueprint:** {fav_selection} has their position locked down or is facing extreme fixture fatigue. They will heavily rotate the squad or play in low-gear to avoid injuries. Meanwhile, {underdog} is fighting for literal survival.")
-        st.write(f"**The Reality:** {underdog}'s raw urgency will outwork the favorite's passive quality on the pitch. The public will blindly back the big name, completely burning their betting slips.")
-        st.info("💡 **Sharp Market Angle:** Look heavily at Underdog Double Chance (Win or Draw) or Underdog +1.5 Asian Handicap.")
-        
-    # RULE 2: The Pride-Saving Draw
-    elif fav_state == "Coasting / Position Secured / Fixture Congestion" and und_state == "Safe Mid-table / Out of Tournament":
-        st.warning(f"⚽ THE PRIDE-SAVING DEADLOCK")
-        st.write(f"**The Blueprint:** Neither team has a massive mathematical gun to their head. {fav_selection} is coasting and won't waste energy pursuing a 4-0 win. However, because they are a big club, their pride will not allow an embarrassing defeat.")
-        st.write(f"**The Reality:** The favorite will control a slow, horizontal, low-tempo game. They will comfortably accept a flat stalemate to protect their legs.")
-        st.success("🎯 **Predicted Outcomes:** Look for low-scoring draws like 0-0 or 1-1.")
-        st.info("💡 **Sharp Market Angle:** Under 2.5 Match Goals or Match Result: DRAW.")
-        
-    # RULE 3: Normal Competitive State
+    # 2. Compute Wildcard Safety Line from Completed Groups
+    # Find the point tally of the current 9th place team (first team eliminated)
+    elimination_threshold_pts = wildcard_table[8]["points"] 
+    safe_points_line = elimination_threshold_pts + 1
+    
+    # Calculate scenarios
+    pts_if_draw_home = home_pts + 1
+    pts_if_draw_away = away_pts + 1
+    
+    # Check if a draw secures absolute qualification immunity for both
+    home_safe_with_draw = pts_if_draw_home >= safe_points_line
+    away_safe_with_draw = pts_if_draw_away >= safe_points_line
+    
+    # 3. Automated Tactical Reasoning Generator
+    reasoning = []
+    reasoning.append(f"### 🛡️ Automated Safety Line Analysis")
+    reasoning.append(f"The live cross-group third-place table dictates that reaching **{safe_points_line} points** guarantees absolute qualification immunity into the Round of 32.")
+    
+    if home_safe_with_draw and away_safe_with_draw:
+        reasoning.append(
+            f"\n*   **The Shared Premium:** A draw pushes {home_team} to {pts_if_draw_home} points and {away_team} to {pts_if_draw_away} points. "
+            f"Because both teams completely clear the {elimination_threshold_pts}-point cutoff, an implicit late-game deadlock logic is highly active. "
+            f"Neither manager will green-light high-risk offensive phases past the 75th minute."
+        )
     else:
-        st.success(f"🔥 GREEN LIGHT: FULL COMPETITIVE MATCH")
-        st.write(f"**The Blueprint:** {fav_selection} strictly needs these points for a title, promotion, or qualification. They cannot afford to coast or heavily rotate.")
-        st.write(f"**The Reality:** Motivation is fully aligned with squad quality here. The favorite will play at 100% capacity.")
-        st.info(f"💡 **Sharp Market Angle:** Standard on-paper analysis applies. Favorite Straight Win is playable if value exists.")
+        reasoning.append(f"\n*   **Asymmetrical Motivation:** One or both teams require a maximum victory to guarantee progression, forcing an open match script.")
+
+    # 4. Correct Score Prediction Matrix Generator
+    predictions = []
+    if home_safe_with_draw and away_safe_with_draw:
+        predictions = [
+            {"score": "0 – 0", "type": "Cooperative Stalemate", "desc": "Both sides minimize horizontal risk, maintaining low defensive structures to secure progression."},
+            {"score": "1 – 1", "type": "Restored Parity", "desc": "An early individual mistake prompts an equalizer, after which both teams down tools to share the points."},
+            {"score": "1 – 0", "type": "Controlled Edge", "desc": "The favored side claims a narrow tactical advantage, immediately dropping into a low block to run out the clock."}
+        ]
+        
+    return {
+        "summary": f"{home_team} vs {away_team} Analytics Pipeline",
+        "safety_threshold_points": safe_points_line,
+        "automated_reasoning": "\n".join(reasoning),
+        "target_scores": predictions
+    }
+
+# --- EXAMPLE LIVE APPLICATION LIVE DEPLOYMENT ---
+if __name__ == "__main__":
+    # Live Live-Group L Standings Data Before Kickoff
+    group_l_data = {
+        "Croatia": {"points": 3, "gd": -1},
+        "Ghana": {"points": 4, "gd": 1},
+        "England": {"points": 4, "gd": 2},
+        "Panama": {"points": 0, "gd": -2}
+    }
+
+    # Live Scraped Master Third-Place Leaderboard Tracker
+    scraped_wildcard_table = [
+        {"rank": 1, "team": "Sweden", "points": 4, "gd": 0},
+        {"rank": 2, "team": "Ecuador", "points": 4, "gd": 0},
+        {"rank": 3, "team": "Bosnia", "points": 4, "gd": -1},
+        {"rank": 4, "team": "Paraguay", "points": 4, "gd": -2},
+        {"rank": 5, "team": "Senegal", "points": 3, "gd": 2},
+        {"rank": 6, "team": "South Korea", "points": 3, "gd": -1},
+        {"rank": 7, "team": "Iran", "points": 3, "gd": 0},
+        {"rank": 8, "team": "Scotland", "points": 3, "gd": -3},
+        {"rank": 9, "team": "Uruguay", "points": 2, "gd": -1} # Rank 9 is the cutoff line (Eliminated)
+    ]
+
+    # Run Analysis Pipeline for the User's Target Teams
+    output = generate_match_analytics(
+        home_team="Croatia", 
+        away_team="Ghana", 
+        group_data=group_l_data, 
+        wildcard_table=scraped_wildcard_table
+    )
+
+    # Print the structured output to be pushed to your app's frontend component layout
+    print(output["automated_reasoning"])
+    print("\n### 🎯 Target Correct Score Presets:")
+    for pred in output["target_scores"]:
+        print(f"*   **{pred['score']}** ({pred['type']}): {pred['desc']}")
+
