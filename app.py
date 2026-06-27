@@ -3,7 +3,7 @@ import streamlit as st
 # Configure the page for a clean mobile-first view
 st.set_page_config(page_title="Trap Detective Engine", page_icon="⚽", layout="centered")
 
-# Custom Dark Mode Styling using Streamlit markdown
+# Custom Dark Mode Styling using Streamlit markdown with corrected parameter
 st.markdown("""
     <style>
     .stApp { background-color: #0e1117; color: #ffffff; }
@@ -11,7 +11,7 @@ st.markdown("""
     .stButton>button { width: 100%; background-color: #00ffcc; color: black; font-weight: bold; border-radius: 8px; }
     .stButton>button:hover { background-color: #00cc99; color: white; }
     </style>
-""", unsafe_style_with_html=True)
+""", unsafe_allow_html=True)
 
 st.title("⚽ TRAP DETECTIVE ENGINE")
 st.write("---")
@@ -55,7 +55,7 @@ if st.button("RUN TRAP ANALYSIS"):
         st.write(f"**The Reality:** {underdog}'s raw urgency will outwork the favorite's passive quality on the pitch. The public will blindly back the big name, completely burning their betting slips.")
         st.info("💡 **Sharp Market Angle:** Look heavily at Underdog Double Chance (Win or Draw) or Underdog +1.5 Asian Handicap.")
         
-    # RULE 2: The Pride-Saving Draw (Both have low motivation or favorite is coasting but underdog isn't desperate)
+    # RULE 2: The Pride-Saving Draw
     elif fav_state == "Coasting / Position Secured / Fixture Congestion" and und_state == "Safe Mid-table / Out of Tournament":
         st.warning(f"⚽ THE PRIDE-SAVING DEADLOCK")
         st.write(f"**The Blueprint:** Neither team has a massive mathematical gun to their head. {fav_selection} is coasting and won't waste energy pursuing a 4-0 win. However, because they are a big club, their pride will not allow an embarrassing defeat.")
