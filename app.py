@@ -9,7 +9,7 @@ group_l = {
     "Panama": {"pts": 0, "gd": -2, "qual": False, "elim": True}
 }
 
-# Only valid remaining group stage matches
+# Valid remaining group stage matches
 valid_matches = {
     "England": ["Panama"], "Panama": ["England"],
     "Ghana": ["Croatia"], "Croatia": ["Ghana"]
@@ -26,25 +26,25 @@ def get_scenarios(team, data):
         ]
     return [
         f"* **Win:** Moves to {data['pts']+3} points. Automatically qualifies.",
-        f"* **Draw:** Moves to {data['pts']+1} points. Depends on third-place ranking table; goal difference ({data['gd']}) may be a factor.",
+        f"* **Draw:** Moves to {data['pts']+1} points. Depends on third-place rankings; GD ({data['gd']}) is critical.",
         f"* **Loss:** Stays on {data['pts']} points. Likely eliminated."
     ]
 
 def get_predictions(home, away, h_data, a_data):
-    # Logic for England vs Panama or Ghana vs Croatia
+    # Logic for match predictions with team names included
     if home == "England" or away == "England":
         return [
-            {"score": "3 – 0", "reasoning": "- Group leader dominance & high-scoring win"},
-            {"score": "2 – 0", "reasoning": "- Controlled win to secure top seed"},
-            {"score": "1 – 1", "reasoning": "- Late rotation allowing a consolation goal"}
+            {"score": f"{home} 3 – 0 {away}", "reasoning": "- Group leader dominance & high-scoring win"},
+            {"score": f"{home} 2 – 0 {away}", "reasoning": "- Controlled win to secure top seed"},
+            {"score": f"{home} 1 – 1 {away}", "reasoning": "- Late rotation allowing a consolation goal"}
         ]
     elif home == "Croatia" or away == "Croatia":
         return [
-            {"score": "2 – 1", "reasoning": "- Survival mode (Croatia) & high intensity"},
-            {"score": "1 – 1", "reasoning": "- Desperate attack vs qualified defense"},
-            {"score": "1 – 2", "reasoning": "- Counter-attack efficiency from the qualified team"}
+            {"score": f"{home} 2 – 1 {away}", "reasoning": "- Survival mode (Croatia) & high intensity"},
+            {"score": f"{home} 1 – 1 {away}", "reasoning": "- Desperate attack vs qualified defense"},
+            {"score": f"{home} 1 – 2 {away}", "reasoning": "- Counter-attack efficiency from the qualified team"}
         ]
-    return [{"score": "1 – 1", "reasoning": "- Standard match progression"}]
+    return [{"score": f"{home} 1 – 1 {away}", "reasoning": "- Standard match progression"}]
 
 # --- UI ---
 st.title("⚽ World Cup Qualification Matrix")
