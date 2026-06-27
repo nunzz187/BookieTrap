@@ -58,18 +58,48 @@ def calculate_automated_predictions(home_team, away_team, favorite_team, group_d
 st.title("⚽ BookieTrap: Grand Finale Matrix")
 st.markdown("Select your matching pair to calculate tactical script vulnerabilities based on the tournament wildcard thresholds.")
 
-# Real-time data storage arrays
-tournament_teams = ["Croatia", "Ghana", "England", "Panama", "Sweden", "Ecuador", "Senegal"]
-
+# --- OFFICIAL 48-TEAM COMPREHENSIVE WORLD CUP DATABASE ---
 group_stage_database = {
-    "Croatia": {"points": 3, "gd": -1},
-    "Ghana": {"points": 4, "gd": 1},
-    "England": {"points": 4, "gd": 2},
-    "Panama": {"points": 0, "gd": -2},
-    "Sweden": {"points": 4, "gd": 0},
-    "Ecuador": {"points": 4, "gd": 0},
-    "Senegal": {"points": 3, "gd": 2}
+    # Group A
+    "Mexico": {"points": 9, "gd": 6}, "South Africa": {"points": 4, "gd": -1},
+    "South Korea": {"points": 3, "gd": -1}, "Czechia": {"points": 1, "gd": -4},
+    # Group B
+    "Switzerland": {"points": 7, "gd": 4}, "Canada": {"points": 4, "gd": 5},
+    "Bosnia and Herzegovina": {"points": 4, "gd": -1}, "Qatar": {"points": 1, "gd": -8},
+    # Group C
+    "Brazil": {"points": 7, "gd": 6}, "Morocco": {"points": 7, "gd": 3},
+    "Scotland": {"points": 3, "gd": -3}, "Haiti": {"points": 0, "gd": -6},
+    # Group D
+    "United States": {"points": 6, "gd": 4}, "Australia": {"points": 4, "gd": 0},
+    "Paraguay": {"points": 4, "gd": -2}, "Turkey": {"points": 3, "gd": -2},
+    # Group E
+    "Germany": {"points": 6, "gd": 6}, "Ivory Coast": {"points": 6, "gd": 2},
+    "Ecuador": {"points": 4, "gd": 0}, "Curaçao": {"points": 1, "gd": -8},
+    # Group F
+    "Netherlands": {"points": 7, "gd": 6}, "Japan": {"points": 5, "gd": 4},
+    "Sweden": {"points": 4, "gd": 0}, "Tunisia": {"points": 0, "gd": -10},
+    # Group G
+    "Belgium": {"points": 5, "gd": 4}, "Egypt": {"points": 5, "gd": 2},
+    "Iran": {"points": 3, "gd": 0}, "New Zealand": {"points": 1, "gd": -6},
+    # Group H
+    "Spain": {"points": 7, "gd": 5}, "Cape Verde": {"points": 3, "gd": 0},
+    "Uruguay": {"points": 2, "gd": -1}, "Saudi Arabia": {"points": 2, "gd": -4},
+    # Group I
+    "France": {"points": 9, "gd": 8}, "Norway": {"points": 6, "gd": 1},
+    "Senegal": {"points": 3, "gd": 2}, "Iraq": {"points": 0, "gd": -11},
+    # Group J (Live Matches In-Progress)
+    "Argentina": {"points": 6, "gd": 5}, "Austria": {"points": 3, "gd": 0},
+    "Algeria": {"points": 3, "gd": -2}, "Jordan": {"points": 0, "gd": -3},
+    # Group K (Live Matches In-Progress)
+    "Colombia": {"points": 6, "gd": 3}, "Portugal": {"points": 4, "gd": 5},
+    "DR Congo": {"points": 1, "gd": -1}, "Uzbekistan": {"points": 0, "gd": -7},
+    # Group L (Live Matches In-Progress)
+    "England": {"points": 4, "gd": 2}, "Ghana": {"points": 4, "gd": 1},
+    "Croatia": {"points": 3, "gd": -1}, "Panama": {"points": 0, "gd": -2}
 }
+
+# Alphabetically sorted list of all teams for clean UI selection
+all_teams_list = sorted(list(group_stage_database.keys()))
 
 master_wildcard_standings = [
     {"rank": 1, "team": "Sweden", "points": 4, "gd": 0},
@@ -83,12 +113,14 @@ master_wildcard_standings = [
     {"rank": 9, "team": "Uruguay", "points": 2, "gd": -1}
 ]
 
-# Interactive Form Selectors
+# Interactive Form Selectors populated with the complete 48 teams
 col1, col2 = st.columns(2)
 with col1:
-    team_a = st.selectbox("Select Home Team", options=tournament_teams, index=0)
+    # Defaults to Croatia
+    team_a = st.selectbox("Select Home Team", options=all_teams_list, index=12)
 with col2:
-    team_b = st.selectbox("Select Away Team", options=tournament_teams, index=1)
+    # Defaults to Ghana
+    team_b = st.selectbox("Select Away Team", options=all_teams_list, index=19)
 
 # Bookmaker Variable Injector
 odds_favorite = st.radio(
@@ -100,7 +132,7 @@ odds_favorite = st.radio(
 if team_a == team_b:
     st.error("Error: Please select two different competing teams.")
 else:
-    # Trigger calculation dynamically on state change
+    # Trigger calculation dynamically on selection change
     analytics = calculate_automated_predictions(
         home_team=team_a, 
         away_team=team_b, 
